@@ -1,5 +1,6 @@
 <?php
 require_once '../includes/header.php';
+require_once '../includes/functions.php';
 
 if (!isAdmin()) {
     header("Location: ../index.php");
