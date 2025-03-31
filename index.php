@@ -1,5 +1,6 @@
 <?php
 require_once 'includes/header.php';
+require_once 'includes/functions.php';
 
 $order = isset($_GET['order']) && $_GET['order'] === 'asc' ? 'ASC' : 'DESC';
 $articles = getArticles($pdo, $order);
@@ -37,7 +38,7 @@ $articles = getArticles($pdo, $order);
                     <?php endif; ?>
                 </div>
                 <div class="article-excerpt">
-                    <?php echo substr(htmlspecialchars($article['content']), 0, 400); ?>...
+                    <?php echo substr(htmlspecialchars($article['content']), 0, 200); ?>...
                 </div>
                 <a href="articles/article.php?id=<?php echo $article['id']; ?>" class="read-more">Čítať viac</a>
             </div>
