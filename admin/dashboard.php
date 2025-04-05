@@ -9,7 +9,6 @@ if (!isAdmin()) {
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_roles'])) {
     foreach ($_POST['user_roles'] as $user_id => $role) {
-        // Zabránenie zmene vlastnej role
         if ($user_id == $_SESSION['user_id']) {
             continue;
         }
@@ -41,6 +40,7 @@ $articles = getArticles($pdo);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <title>Blog Systen</title>
 </head>
 <body>
@@ -84,7 +84,7 @@ $articles = getArticles($pdo);
                             <td><?php echo $user['role'] == 'admin' ? 'Administrátor' : 'Bežný používateľ'; ?></td>
                             <td>
                                 <?php if ($user['id'] != $_SESSION['user_id']): ?>
-                                    <label>
+                                    <label class="role-toggle">
                                         <input type="checkbox" name="user_roles[<?php echo $user['id']; ?>]" value="<?php echo $user['role'] == 'admin' ? 'user' : 'admin'; ?>" class="role-checkbox">
                                         <?php echo $user['role'] == 'admin' ? 'Zmeniť na používateľa' : 'Zmeniť na admina'; ?>
                                     </label>
@@ -97,7 +97,9 @@ $articles = getArticles($pdo);
                 </tbody>
             </table>
             <div class="form-actions">
-                <button type="submit" name="change_roles" class="btn btn-primary">Uložiť zmeny rolí</button>
+                <button type="submit" name="change_roles" class="btn btn-save">
+                    <i class="fas fa-save"></i> Uložiť zmeny
+                </button>
             </div>
         </form>
     </div>
