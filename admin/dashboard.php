@@ -7,6 +7,21 @@ if (!isAdmin()) {
     exit();
 }
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_roles'])) {
+    foreach ($_POST['user_roles'] as $user_id => $role) {
+        // Zabránenie zmene vlastnej role
+        if ($user_id == $_SESSION['user_id']) {
+            continue;
+        }
+        
+        $stmt = $pdo->prepare("UPDATE users SET role = ? WHERE id = ?");
+        $stmt->execute([$role, $user_id]);
+    }
+    $_SESSION['success'] = "Role používateľov boli aktualizované.";
+    header("Location: dashboard.php");
+    exit();
+}
+
 $stmt = $pdo->query("SELECT COUNT(*) as total_articles FROM articles");
 $total_articles = $stmt->fetch(PDO::FETCH_ASSOC)['total_articles'];
 
@@ -15,6 +30,8 @@ $total_users = $stmt->fetch(PDO::FETCH_ASSOC)['total_users'];
 
 $stmt = $pdo->query("SELECT COUNT(*) as total_comments FROM comments");
 $total_comments = $stmt->fetch(PDO::FETCH_ASSOC)['total_comments'];
+
+$users = $pdo->query("SELECT id, username, role FROM users ORDER BY role DESC, username ASC")->fetchAll(PDO::FETCH_ASSOC);
 
 $articles = getArticles($pdo);
 ?>
@@ -48,6 +65,41 @@ $articles = getArticles($pdo);
             <div class="stat-label">Celkom komentárov</div>
             <div class="stat-value"><?php echo $total_comments; ?></div>
         </div>
+    </div>
+    <div class="user-management-section">
+        <h2>Správa používateľov</h2>
+        <form method="post" action="dashboard.php">
+            <table class="user-table">
+                <thead>
+                    <tr>
+                        <th>Meno používateľa</th>
+                        <th>Rola</th>
+                        <th>Zmena rolí</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($users as $user): ?>
+                        <tr>
+                            <td><?php echo htmlspecialchars($user['username']); ?></td>
+                            <td><?php echo $user['role'] == 'admin' ? 'Administrátor' : 'Bežný používateľ'; ?></td>
+                            <td>
+                                <?php if ($user['id'] != $_SESSION['user_id']): ?>
+                                    <label>
+                                        <input type="checkbox" name="user_roles[<?php echo $user['id']; ?>]" value="<?php echo $user['role'] == 'admin' ? 'user' : 'admin'; ?>" class="role-checkbox">
+                                        <?php echo $user['role'] == 'admin' ? 'Zmeniť na používateľa' : 'Zmeniť na admina'; ?>
+                                    </label>
+                                <?php else: ?>
+                                    <span class="text-muted">Aktuálny používateľ</span>
+                                <?php endif; ?>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+            <div class="form-actions">
+                <button type="submit" name="change_roles" class="btn btn-primary">Uložiť zmeny rolí</button>
+            </div>
+        </form>
     </div>
     <h2>Najnovšie články</h2>
     <div class="article-list">
