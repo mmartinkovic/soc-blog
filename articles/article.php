@@ -60,7 +60,9 @@ if (isset($_GET['delete_comment'])) {
 </head>
 <body>
     <div class="article-full">
-        <h1 class="article-title"><?php echo htmlspecialchars($article['title']); ?></h1>
+        <div class="article-header">
+            <h1 class="article-title"><?php echo htmlspecialchars($article['title']); ?></h1>
+        </div>
         <div class="article-meta">
             Napísal/a <?php echo htmlspecialchars($article['username']); ?> dňa 
             <?php echo date('d.m.Y H:i', strtotime($article['created_at'])); ?>

@@ -7,14 +7,23 @@ function isAdmin() {
     return isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin';
 }
 
-function getArticles($pdo, $order = 'DESC') {
-    $valid_orders = ['ASC', 'DESC'];
-    $order = in_array($order, $valid_orders) ? $order : 'DESC';
+function getArticles($pdo, $order = 'DESC', $author_id = null) {
+    $sql = "SELECT articles.*, users.username 
+            FROM articles 
+            JOIN users ON articles.user_id = users.id";
     
-    $stmt = $pdo->prepare("SELECT articles.*, users.username 
-                          FROM articles 
-                          JOIN users ON articles.user_id = users.id 
-                          ORDER BY created_at $order");
+    if ($author_id) {
+        $sql .= " WHERE articles.user_id = :author_id";
+    }
+    
+    $sql .= " ORDER BY articles.created_at $order";
+    
+    $stmt = $pdo->prepare($sql);
+    
+    if ($author_id) {
+        $stmt->bindParam(':author_id', $author_id, PDO::PARAM_INT);
+    }
+    
     $stmt->execute();
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
@@ -62,5 +71,4 @@ function parseMarkdown($text) {
     }
     return $text;
 }
-?>
 

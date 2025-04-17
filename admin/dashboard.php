@@ -21,6 +21,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_roles'])) {
     exit();
 }
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_user'])) {
+    $user_id_to_delete = (int)($_POST['user_id_to_delete'] ?? 0);
+    $stmt = $pdo->prepare("SELECT username FROM users WHERE id = ?");
+    $stmt->execute([$user_id_to_delete]);
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+    if (!$user) {
+        $_SESSION['error'] = "Používateľ neexistuje!";
+        header("Location: dashboard.php");
+        exit();
+    }
+    $stmt = $pdo->prepare("DELETE FROM users WHERE id = ?");
+    $stmt->execute([$user_id_to_delete]);
+    $_SESSION['success'] = "Používateľ <strong>" . htmlspecialchars($user['username']) . "</strong> bol úspešne vymazaný.";
+    header("Location: dashboard.php");
+    exit();
+}
+
 $stmt = $pdo->query("SELECT COUNT(*) as total_articles FROM articles");
 $total_articles = $stmt->fetch(PDO::FETCH_ASSOC)['total_articles'];
 
@@ -75,6 +92,7 @@ $articles = getArticles($pdo);
                         <th>Meno používateľa</th>
                         <th>Rola</th>
                         <th>Zmena rolí</th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -91,6 +109,18 @@ $articles = getArticles($pdo);
                                 <?php else: ?>
                                     <span class="text-muted">Aktuálny používateľ</span>
                                 <?php endif; ?>
+                            </td>
+                            <td>
+                                <?php if ($user['id'] != $_SESSION['user_id']): ?>
+                                    <form method="POST" action="dashboard.php">
+                                        <input type="hidden" name="user_id_to_delete" value="<?php echo $user['id']; ?>">
+                                        <button type="submit" name="delete_user" class="btn" onclick="return confirm('Naozaj chcete vymazať používateľa <?php echo $user['username']; ?>?')">
+                                            <i class="fa-solid fa-user-xmark"></i>
+                                        </button>
+                                    </form>
+                                <?php else: ?>
+                                    <span></span>
+                                <?php endif; ?>                        
                             </td>
                         </tr>
                     <?php endforeach; ?>
